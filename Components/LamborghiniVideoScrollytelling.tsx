@@ -83,7 +83,7 @@ export default function LamborghiniVideoScrollytelling() {
         />
 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <h1 className="text-1 absolute text-white text-4xl md:text-7xl font-bold tracking-wider uppercase opacity-0">
+            <h1 className="text-1 absolute text-white text-4xl md:text-7xl font-bold tracking-wider uppercase text-center opacity-0">
             Unleash the Beast
             </h1>
             <h2 className="text-2 absolute text-white text-3xl md:text-6xl font-bold tracking-wider uppercase opacity-0 text-center px-6">
