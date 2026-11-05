@@ -5,109 +5,117 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+ScrollTrigger.config({ ignoreMobileResize: true });
 
-const DURATION = 23;
+const FALLBACK_DURATION = 23;
+const LERP = 0.15; 
 
 export default function LamborghiniVideoScrollytelling() {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useGSAP(
-        () => {
+        (_, contextSafe) => {
             const video = videoRef.current;
-            if (!video) return;
+            const container = containerRef.current;
+            if (!video || !container || !contextSafe) return;
 
-            const setup = () => {
+            let targetTime = 0;
+            let currentTime = 0;
+            let duration = FALLBACK_DURATION;
+
+            
+            const unlock = () => {
+                video.play().then(() => video.pause()).catch(() => {});
+            };
+            window.addEventListener('touchstart', unlock, { once: true, passive: true });
+
+            
+            const tick = () => {
+                currentTime += (targetTime - currentTime) * LERP;
+                if (Math.abs(targetTime - currentTime) < 0.001) currentTime = targetTime;
+
+                if (!video.seeking && Math.abs(video.currentTime - currentTime) > 1 / 60) {
+                    video.currentTime = currentTime;
+                }
+            };
+
+            const setup = contextSafe(() => {
+                duration = video.duration || FALLBACK_DURATION;
                 video.pause();
-                video.currentTime = 0;
-
-
-                const state = { time: 0 };
-                let lastTime = -1;
-
-
                 video.currentTime = 0;
 
                 const tl = gsap.timeline({
                     defaults: { ease: 'none' },
                     scrollTrigger: {
-                        trigger: containerRef.current,
+                        trigger: container,
                         start: 'top top',
-                        end: '+=4000',
-                        scrub: 0.5,
+                        end: () => `+=${window.innerHeight * 5}`,
+                        scrub: true, 
                         pin: true,
                         anticipatePin: 1,
                         invalidateOnRefresh: true,
+                        refreshPriority: 1, 
+                        onUpdate: (self) => {
+                            targetTime = self.progress * duration;
+                        },
                     },
                 });
 
-                tl.to(
-                    state,
-                    {
-                        time: video.duration || DURATION,
-                        duration: DURATION,
-                        onUpdate: () => {
-                            if (Math.abs(state.time - lastTime) >= 1 / 30) {
-                                video.currentTime = state.time;
-                                lastTime = state.time;
-                            }
-                        },
-                    },
-                    0
-                );
+                tl.set({}, {}, duration);
 
-                tl.fromTo('.text-1', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 }, 2)
-                    .to('.text-1', { opacity: 0, y: -40, duration: 1 }, 6);
+                tl.fromTo('.scrolly-text-1', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 }, 2)
+                    .to('.scrolly-text-1', { opacity: 0, y: -40, duration: 1 }, 6);
 
-                tl.fromTo('.text-2', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 }, 9)
-                    .to('.text-2', { opacity: 0, y: -40, duration: 1 }, 15);
+                tl.fromTo('.scrolly-text-2', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 }, 9)
+                    .to('.scrolly-text-2', { opacity: 0, y: -40, duration: 1 }, 15);
 
-                tl.fromTo('.text-3', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 }, 18)
-                    .to('.text-3', { opacity: 0, y: -40, duration: 1 }, 22);
-            };
+                tl.fromTo('.scrolly-text-3', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 }, 18)
+                    .to('.scrolly-text-3', { opacity: 0, y: -40, duration: 1 }, 22);
 
-            if (video.readyState >= 1 && !isNaN(video.duration)) {
+                gsap.ticker.add(tick);
+
+                ScrollTrigger.refresh();
+            });
+
+            if (video.readyState >= 1 && !Number.isNaN(video.duration)) {
                 setup();
             } else {
-                video.onloadedmetadata = () => {
-                    video.pause();
-                    video.currentTime = 0;
-                    setup();
-                };
+                video.addEventListener('loadedmetadata', setup, { once: true });
                 video.load();
             }
 
             return () => {
-                if (video) video.onloadedmetadata = null;
+                gsap.ticker.remove(tick);
+                video.removeEventListener('loadedmetadata', setup);
+                window.removeEventListener('touchstart', unlock);
             };
         },
         { scope: containerRef }
     );
 
     return (
-        <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
-            <div>
-                <video
-                    ref={videoRef}
-                    src="/scrub_optimized.mp4"
-                    poster="/lamborghini-poster.webp"
-                    className="w-full h-full object-cover pointer-events-none"
-                    muted
-                    playsInline
-                    preload="auto"
-                    disablePictureInPicture
-                />
-            </div>
+        <div ref={containerRef} className="relative h-svh w-full overflow-hidden bg-black">
+            <video
+                ref={videoRef}
+                src="/scrub_optimized.mp4"
+                poster="/lamborghini-poster.webp"
+                className="pointer-events-none h-full w-full object-cover"
+                muted
+                playsInline
+                preload="auto"
+                disablePictureInPicture
+            />
 
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <h1 className="text-1 absolute text-white text-4xl md:text-7xl font-bold tracking-wider uppercase text-center opacity-0">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <h1 className="scrolly-text-1 absolute px-6 text-center text-4xl font-bold uppercase tracking-wider text-white opacity-0 md:text-7xl">
                     Unleash the Beast
                 </h1>
-                <h2 className="text-2 absolute text-white text-3xl md:text-6xl font-bold tracking-wider uppercase opacity-0 text-center px-6">
+                <h2 className="scrolly-text-2 absolute px-6 text-center text-3xl font-bold uppercase tracking-wider text-white opacity-0 md:text-6xl">
                     Twin-Turbo V8 Power &amp; Agility
                 </h2>
-                <h2 className="text-3 absolute text-white text-4xl md:text-7xl font-bold tracking-wider uppercase opacity-0 text-center px-6">
+                <h2 className="scrolly-text-3 absolute px-6 text-center text-4xl font-bold uppercase tracking-wider text-white opacity-0 md:text-7xl">
                     Redefining Performance
                 </h2>
             </div>
