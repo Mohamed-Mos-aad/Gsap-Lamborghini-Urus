@@ -90,13 +90,13 @@ export default function LamborghiniVideoScrollytelling() {
             <div>
                 <video
                     ref={videoRef}
-                    src="/scrub_mid.mp4"
-                    className="w-full h-full lg:object-cover  pointer-events-none"
+                    src="/scrub_optimized.mp4"
+                    poster="/lamborghini-poster.webp"
+                    className="w-full h-full object-cover pointer-events-none"
                     muted
                     playsInline
                     preload="auto"
                     disablePictureInPicture
-                    aria-label="Lamborghini Scrollytelling Video"
                 />
             </div>
 

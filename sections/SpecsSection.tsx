@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRef } from 'react';
@@ -16,43 +17,77 @@ const SPECS = [
 export default function SpecsSection() {
     const sectionRef = useRef<HTMLElement>(null);
 
-    useGSAP(
-        () => {
-            gsap.from('.spec-title', {
-                opacity: 0,
-                y: 40,
+    useGSAP(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+
+        const title = section.querySelector('.spec-title');
+        const grid = section.querySelector('.spec-grid');
+        const cards = section.querySelectorAll('.spec-card');
+        const counters = section.querySelectorAll('.spec-value');
+
+        // Title animation
+        gsap.fromTo(
+            title,
+            { opacity: 0, y: 40 },
+            {
+                opacity: 1,
+                y: 0,
                 duration: 1,
                 ease: 'power3.out',
-                scrollTrigger: { trigger: sectionRef.current, start: 'top 75%', once: true },
-            });
+                scrollTrigger: {
+                    trigger: section,
+                    start: 'top 75%',
+                    toggleActions: 'play reverse play reverse',
+                },
+            }
+        );
 
-            gsap.from('.spec-card', {
-                opacity: 0,
-                y: 60,
+        // Cards animation
+        gsap.fromTo(
+            cards,
+            { opacity: 0, y: 60 },
+            {
+                opacity: 1,
+                y: 0,
                 duration: 1,
                 stagger: 0.2,
                 ease: 'power3.out',
-                scrollTrigger: { trigger: '.spec-grid', start: 'top 80%', once: true },
-            });
+                scrollTrigger: {
+                    trigger: grid,
+                    start: 'top 80%',
+                    toggleActions: 'play reverse play reverse',
+                },
+            }
+        );
 
-            gsap.utils.toArray<HTMLElement>('.spec-value').forEach((el) => {
-                const target = Number(el.dataset.value);
-                const decimals = Number(el.dataset.decimals);
-                const counter = { val: 0 };
+        // Counter animations
+        counters.forEach((el) => {
+            const target = Number(el.getAttribute('data-value'));
+            const decimals = Number(el.getAttribute('data-decimals'));
 
-                gsap.to(counter, {
-                    val: target,
-                    duration: 2.5,
-                    ease: 'power2.out',
-                    onUpdate: () => {
-                        el.textContent = counter.val.toFixed(decimals);
-                    },
-                    scrollTrigger: { trigger: '.spec-grid', start: 'top 80%', scrub: true },
-                });
+            const counter = { value: 0 };
+
+            gsap.to(counter, {
+                value: target,
+                duration: 2.5,
+                ease: 'power2.out',
+                onUpdate: () => {
+                    el.textContent = counter.value.toFixed(decimals);
+                },
+                scrollTrigger: {
+                    trigger: grid,
+                    start: 'top 80%',
+                    toggleActions: 'play reverse play reverse',
+                },
             });
-        },
-        { scope: sectionRef }
-    );
+        });
+
+        requestAnimationFrame(() => {
+            ScrollTrigger.refresh();
+        });
+
+    }, { scope: sectionRef });
 
     return (
         <section
@@ -67,18 +102,22 @@ export default function SpecsSection() {
                 {SPECS.map((spec) => (
                     <div
                         key={spec.label}
-                        className="spec-card flex flex-col items-center rounded-2xl border border-amber-400/20 bg-white/2 px-6 py-12 shadow-[0_0_40px_rgba(251,191,36,0.06)] backdrop-blur-sm"
+                        className="spec-card flex flex-col items-center rounded-2xl border border-amber-400/20 bg-white/5 px-6 py-12 shadow-[0_0_40px_rgba(251,191,36,0.06)] backdrop-blur-sm"
                     >
                         <div className="flex items-baseline gap-2">
                             <span
-                                className="spec-value text-6xl font-bold tabular-nums sm:text-7xl md:text-8xl text-white [text-shadow:0_0_30px_rgba(251,191,36,0.5)]"
+                                className="spec-value text-6xl font-bold tabular-nums sm:text-7xl md:text-8xl text-white"
                                 data-value={spec.value}
                                 data-decimals={spec.decimals}
                             >
                                 {(0).toFixed(spec.decimals)}
                             </span>
-                            <span className="text-xl font-semibold text-amber-400 md:text-2xl">{spec.unit}</span>
+
+                            <span className="text-xl font-semibold text-amber-400 md:text-2xl">
+                                {spec.unit}
+                            </span>
                         </div>
+
                         <p className="mt-4 text-xs uppercase tracking-[0.3em] text-white/60 md:text-sm">
                             {spec.label}
                         </p>
