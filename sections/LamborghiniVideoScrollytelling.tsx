@@ -97,16 +97,18 @@ export default function LamborghiniVideoScrollytelling() {
 
     return (
         <div ref={containerRef} className="relative h-svh w-full overflow-hidden bg-black">
-            <video
-                ref={videoRef}
-                src="/scrub_optimized.mp4"
-                poster="/lamborghini-poster.webp"
-                className="pointer-events-none h-full w-full object-cover"
-                muted
-                playsInline
-                preload="auto"
-                disablePictureInPicture
-            />
+            <div>
+                <video
+                    ref={videoRef}
+                    src="/scrub_optimized.mp4"
+                    poster="/lamborghini-poster.webp"
+                    className="pointer-events-none h-full w-full lg:object-cover"
+                    muted
+                    playsInline
+                    preload="auto"
+                    disablePictureInPicture
+                />
+            </div>
 
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <h1 className="scrolly-text-1 absolute px-6 text-center text-4xl font-bold uppercase tracking-wider text-white opacity-0 md:text-7xl">
