@@ -19,6 +19,10 @@ export default function LamborghiniVideoScrollytelling() {
             if (!video) return;
 
             const setup = () => {
+                video.pause();
+                video.currentTime = 0;
+
+
                 const state = { time: 0 };
                 let lastTime = -1;
 
@@ -34,6 +38,7 @@ export default function LamborghiniVideoScrollytelling() {
                         scrub: 0.5,
                         pin: true,
                         anticipatePin: 1,
+                        invalidateOnRefresh: true,
                     },
                 });
 
@@ -66,6 +71,8 @@ export default function LamborghiniVideoScrollytelling() {
                 setup();
             } else {
                 video.onloadedmetadata = () => {
+                    video.pause();
+                    video.currentTime = 0;
                     setup();
                 };
                 video.load();
@@ -85,10 +92,9 @@ export default function LamborghiniVideoScrollytelling() {
                 src="/scrub_mid.mp4"
                 className="w-full h-full object-cover pointer-events-none"
                 muted
-                autoPlay
                 playsInline
-                webkit-playsinline="true"
                 preload="auto"
+                disablePictureInPicture
                 aria-label="Lamborghini Scrollytelling Video"
             />
 
