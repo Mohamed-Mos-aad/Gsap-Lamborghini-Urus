@@ -1,5 +1,6 @@
-import LamborghiniVideoScrollytelling from "@/Components/LamborghiniVideoScrollytelling";
-import SpecsSection from "@/Components/SpecsSection";
+// ** Sections
+import LamborghiniVideoScrollytelling from "@/sections/LamborghiniVideoScrollytelling";
+import SpecsSection from "@/sections/SpecsSection";
 
 
 export default function Page() {
